@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { recipesDb } from '@flavor-bomb/shared'
-import type { Recipe, Ingredient, MealType } from '@flavor-bomb/shared'
+import type { Recipe, Ingredient, MealType, MacroSet } from '@flavor-bomb/shared'
 
 const FLAVOR_PROFILES = [
   'Korean', 'Mexican', 'Japanese', 'Asian fusion', 'Mediterranean',
@@ -148,12 +148,12 @@ export default function CreateRecipePage() {
         quantity: i.quantity ? parseFloat(i.quantity) : null,
         unit: i.unit || null,
         category: i.category || null,
-        macros: estimatedMacros[idx] ?? null,
+        macros: (estimatedMacros[idx] ?? null) as MacroSet | null,
         is_gf: true,
         gf_swap: null,
-        swap_macros: null,
+        swap_macros: null as MacroSet | null,
         lc_swap: null,
-        lc_swap_macros: null,
+        lc_swap_macros: null as MacroSet | null,
         sort_order: idx,
       })),
     }
