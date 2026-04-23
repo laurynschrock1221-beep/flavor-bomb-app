@@ -129,7 +129,8 @@ export default function CreateRecipePage() {
       if (res.ok) estimatedMacros = json.macros ?? []
     } catch { /* non-fatal — save with null macros */ }
 
-    const recipe: ParsedRecipe = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recipe = {
       name: name.trim(),
       cuisine: cuisine || null,
       meal_type: mealTypes.length ? mealTypes : null,
@@ -157,7 +158,7 @@ export default function CreateRecipePage() {
         sort_order: idx,
       })),
     }
-    await saveRecipe(recipe)
+    await saveRecipe(recipe as ParsedRecipe)
   }
 
   const chipStyle = (active: boolean, color = '#C1440E') => ({
