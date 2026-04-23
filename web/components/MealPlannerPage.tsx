@@ -2,10 +2,9 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useMealPlan, useMacros, getWeekStart, getTargetsForDayType, sumSlotMacros } from '@flavor-bomb/shared'
+import { useMealPlan, getWeekStart, getTargetsForDayType, calcRecipeMacros } from '@flavor-bomb/shared'
 import DayTypeToggle from './DayTypeToggle'
-import MacroSummary from './MacroSummary'
-import type { Recipe, MealType, DayType, MealSlot, UserSettings } from '@flavor-bomb/shared'
+import type { Recipe, MealType, MealSlot, UserSettings } from '@flavor-bomb/shared'
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack']
@@ -21,7 +20,7 @@ export default function MealPlannerPage({ recipes, userSettings }: Props) {
   const [selectedCell, setSelectedCell] = useState<{ day: string; mealType: MealType } | null>(null)
   const [recipeSearch, setRecipeSearch] = useState('')
 
-  const { mealPlan, plannedDayTypes, loading, addSlot, removeSlot, setDayType, getDayType } =
+  const { plan, loading, addRecipeToSlot, removeRecipeFromSlot, setDayType, getDayType } =
     useMealPlan(supabase, weekStart)
 
   function prevWeek() {
@@ -44,7 +43,8 @@ export default function MealPlannerPage({ recipes, userSettings }: Props) {
   }
 
   function getSlotsForCell(day: string, mealType: MealType): MealSlot[] {
-    return (mealPlan?.slots ?? []).filter(s => s.day === day && s.meal_type === mealType)
+    const idx = DAYS.indexOf(day)
+    return (plan?.slots ?? []).filter(s => s.day === idx && s.meal_type === mealType)
   }
 
   function getRecipeById(id: string): Recipe | undefined {
@@ -54,33 +54,25 @@ export default function MealPlannerPage({ recipes, userSettings }: Props) {
   async function pickRecipe(recipe: Recipe) {
     if (!selectedCell) return
     const { day, mealType } = selectedCell
+    const dayIdx = DAYS.indexOf(day)
     const dayType = getDayType(getDateForDay(day))
-
-    await addSlot({
-      day,
-      meal_type: mealType,
-      recipe_id: recipe.id,
-      day_type: dayType,
-      servings: 1,
-    })
+    await addRecipeToSlot(dayIdx, mealType, recipe.id, dayType)
     setSelectedCell(null)
     setRecipeSearch('')
   }
 
-  // Compute planned macros for a given day
   function getDayMacros(day: string) {
-    const slots = (mealPlan?.slots ?? []).filter(s => s.day === day)
-    const slotData = slots.map(s => {
-      const r = getRecipeById(s.recipe_id)
-      return {
-        calories:  (r?.total_calories  ?? 0) / (r?.servings ?? 1),
-        protein_g: (r?.total_protein_g ?? 0) / (r?.servings ?? 1),
-        carbs_g:   (r?.total_carbs_g   ?? 0) / (r?.servings ?? 1),
-        fat_g:     (r?.total_fat_g     ?? 0) / (r?.servings ?? 1),
-        servings:  s.servings,
-      }
-    })
-    return sumSlotMacros(slotData)
+    const idx = DAYS.indexOf(day)
+    const slots = (plan?.slots ?? []).filter(s => s.day === idx)
+    return slots.reduce(
+      (acc, s) => {
+        const r = getRecipeById(s.recipe_id)
+        if (!r) return acc
+        const m = calcRecipeMacros(r)
+        return { p: acc.p + m.p, c: acc.c + m.c, f: acc.f + m.f, kcal: acc.kcal + m.kcal }
+      },
+      { p: 0, c: 0, f: 0, kcal: 0 }
+    )
   }
 
   const filteredRecipes = recipes.filter(r =>
@@ -155,7 +147,7 @@ export default function MealPlannerPage({ recipes, userSettings }: Props) {
                             <div key={i} className="text-xs bg-white border border-gray-200 rounded p-1 mb-1 flex items-center gap-1">
                               <span className="flex-1 truncate">{r.name}</span>
                               <button
-                                onClick={e => { e.stopPropagation(); removeSlot(day, mealType) }}
+                                onClick={e => { e.stopPropagation(); removeRecipeFromSlot(DAYS.indexOf(day), mealType) }}
                                 className="text-gray-400 hover:text-red-500 shrink-0"
                               >
                                 ×
@@ -181,13 +173,13 @@ export default function MealPlannerPage({ recipes, userSettings }: Props) {
                   const dayType = getDayType(date)
                   const targets = getTargetsForDayType(userSettings, dayType)
                   const planned = getDayMacros(day)
-                  const pct = targets.calories_max > 0
-                    ? Math.min(100, Math.round((planned.calories / targets.calories_max) * 100))
+                  const pct = targets.kcal > 0
+                    ? Math.min(100, Math.round((planned.kcal / targets.kcal) * 100))
                     : 0
                   return (
                     <td key={day} className="p-1 text-center">
-                      <div className="text-xs font-medium">{Math.round(planned.calories)} kcal</div>
-                      <div className="text-xs text-gray-400">/{targets.calories_max}</div>
+                      <div className="text-xs font-medium">{Math.round(planned.kcal)} kcal</div>
+                      <div className="text-xs text-gray-400">/{targets.kcal}</div>
                       <div className="h-1 bg-gray-100 rounded mt-1">
                         <div
                           className={`h-full rounded transition-all ${pct > 100 ? 'bg-red-400' : 'bg-brand-500'}`}
@@ -220,20 +212,23 @@ export default function MealPlannerPage({ recipes, userSettings }: Props) {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           <div className="grid gap-2 sm:grid-cols-2 max-h-64 overflow-y-auto">
-            {filteredRecipes.map(r => (
-              <button
-                key={r.id}
-                onClick={() => pickRecipe(r)}
-                className="text-left p-3 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-brand-500 transition-colors"
-              >
-                <div className="font-medium text-sm">{r.name}</div>
-                {r.total_calories != null && (
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {Math.round(r.total_calories)} kcal · {Math.round(r.total_protein_g ?? 0)}g P
-                  </div>
-                )}
-              </button>
-            ))}
+            {filteredRecipes.map(r => {
+              const m = calcRecipeMacros(r)
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => pickRecipe(r)}
+                  className="text-left p-3 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-brand-500 transition-colors"
+                >
+                  <div className="font-medium text-sm">{r.name}</div>
+                  {m.kcal > 0 && (
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {Math.round(m.kcal)} kcal · {Math.round(m.p)}g P
+                    </div>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
