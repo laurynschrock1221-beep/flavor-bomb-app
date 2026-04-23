@@ -4,7 +4,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { getGfSwap } from '@flavor-bomb/shared'
 import type { Recipe, RecipeInsert, IngredientInsert, MealType } from '@flavor-bomb/shared'
 
 interface IngredientRow extends IngredientInsert {
@@ -60,7 +59,7 @@ export default function RecipeFormPage({ initialRecipe }: Props) {
     setIngredients(prev => prev.map(ing => {
       if (ing._key !== key) return ing
       const updated = { ...ing, [field]: value }
-      if (field === 'name') updated.gf_swap = getGfSwap(value as string)
+      if (field === 'name') updated.gf_swap = null
       return updated
     }))
   }
