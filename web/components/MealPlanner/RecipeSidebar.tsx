@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import type { Recipe } from '@flavor-bomb/shared'
+import type { Recipe, MealType } from '@flavor-bomb/shared'
 import { calcRecipeMacros } from '@flavor-bomb/shared'
 
 interface DraggableCardProps {
@@ -63,7 +63,7 @@ export default function RecipeSidebar({ recipes }: Props) {
 
   const filtered = recipes.filter(r => {
     const matchSearch = !search || r.name.toLowerCase().includes(search.toLowerCase())
-    const matchFilter = !filter || r.meal_type === filter || r.cuisine === filter
+    const matchFilter = !filter || (r.meal_type ?? []).includes(filter as MealType) || r.cuisine === filter
     return matchSearch && matchFilter
   })
 
