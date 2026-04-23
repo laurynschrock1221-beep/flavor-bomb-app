@@ -7,9 +7,10 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Flavor Bomb',
   description: 'Recipes & meal planning for your nutrition goals',
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'Flavor Bomb',
   },
 }
