@@ -26,7 +26,7 @@ export default function EquipmentSettings() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data } = await supabase.schema('recipes').from('user_equipment')
+      const { data } = await (supabase as any).schema('recipes').from('user_equipment')
         .select('equipment').eq('user_id', user.id).maybeSingle()
       if (data?.equipment) setSelected(data.equipment)
     }
@@ -37,7 +37,7 @@ export default function EquipmentSettings() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await supabase.schema('recipes').from('user_equipment')
+    await (supabase as any).schema('recipes').from('user_equipment')
       .upsert({ user_id: user.id, equipment: selected, updated_at: new Date().toISOString() })
     setSaving(false)
     setSaved(true)

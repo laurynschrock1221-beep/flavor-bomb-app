@@ -38,7 +38,7 @@ export default function RecipeList({ initialRecipes, userSettings }: Props) {
     const updated = recipes.find(r => r.id === recipeId)
     const current = updated?.meal_type ?? []
     const next = current.includes(mealType) ? current.filter(t => t !== mealType) : [...current, mealType]
-    await supabase.schema('recipes').from('recipes').update({ meal_type: next }).eq('id', recipeId)
+    await (supabase as any).schema('recipes').from('recipes').update({ meal_type: next }).eq('id', recipeId)
   }
 
   const activeMeal    = searchParams.get('meal')    ?? ''

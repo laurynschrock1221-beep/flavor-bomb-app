@@ -26,7 +26,7 @@ export default function RecipeDetail({ recipe, userId }: Props) {
   async function handleDelete() {
     if (!confirm('Delete this recipe?')) return
     setDeleting(true)
-    await supabase.schema('recipes').from('recipes').delete().eq('id', recipe.id)
+    await (supabase as any).schema('recipes').from('recipes').delete().eq('id', recipe.id)
     router.push('/recipes')
     router.refresh()
   }

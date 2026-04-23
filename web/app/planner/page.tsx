@@ -10,7 +10,7 @@ export default async function PlannerPage() {
   if (!user) redirect('/login')
 
   const [recipesRes, settingsRes] = await Promise.all([
-    supabase.schema('recipes').from('recipes').select('*, ingredients(*)').order('name'),
+    (supabase as any).schema('recipes').from('recipes').select('*, ingredients(*)').order('name'),
     supabase.from('user_settings').select(USER_SETTINGS_COLUMNS).eq('user_id', user.id).single(),
   ])
 

@@ -100,10 +100,10 @@ export default function RecipeFormPage({ initialRecipe }: Props) {
         if (updateErr) throw updateErr
 
         // Replace ingredients
-        await supabase.schema('recipes').from('ingredients').delete().eq('recipe_id', initialRecipe.id)
+        await (supabase as any).schema('recipes').from('ingredients').delete().eq('recipe_id', initialRecipe.id)
         if (validIngredients.length > 0) {
           const rows = validIngredients.map((ing, i) => ({ ...ing, recipe_id: initialRecipe.id, sort_order: i }))
-          const { error: ingErr } = await supabase.schema('recipes').from('ingredients').insert(rows)
+          const { error: ingErr } = await (supabase as any).schema('recipes').from('ingredients').insert(rows)
           if (ingErr) throw ingErr
         }
 
@@ -125,7 +125,7 @@ export default function RecipeFormPage({ initialRecipe }: Props) {
             recipe_id: (newRecipe as Recipe).id,
             sort_order: i,
           }))
-          const { error: ingErr } = await supabase.schema('recipes').from('ingredients').insert(rows)
+          const { error: ingErr } = await (supabase as any).schema('recipes').from('ingredients').insert(rows)
           if (ingErr) throw ingErr
         }
 

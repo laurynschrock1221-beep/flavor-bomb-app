@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Load user's equipment preferences
-  const { data: equipmentRow } = await supabase.schema('recipes').from('user_equipment')
+  const { data: equipmentRow } = await (supabase as any).schema('recipes').from('user_equipment')
     .select('equipment').eq('user_id', user.id).maybeSingle()
   const equipment: string[] = equipmentRow?.equipment ?? []
 
