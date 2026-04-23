@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Recipe, RecipeInsert, Ingredient, IngredientInsert } from '../types'
+import type { Recipe, RecipeInsert, Ingredient, IngredientInsert, MealType } from '../types'
 import { recipesDb } from '../lib/supabaseClient'
 
 interface UseRecipesOptions {
@@ -94,7 +94,7 @@ export function useRecipes(supabase: SupabaseClient, options: UseRecipesOptions 
 
   // Convenience filters (client-side, applied to loaded recipes)
   const filterByMealType = useCallback((type: string) =>
-    recipes.filter(r => r.meal_type === type), [recipes])
+    recipes.filter(r => (r.meal_type ?? []).includes(type as MealType)), [recipes])
 
   const filterByCuisine = useCallback((cuisine: string) =>
     recipes.filter(r => r.cuisine === cuisine), [recipes])
