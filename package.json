@@ -2,8 +2,6 @@
   "name": "flavor-bomb-app",
   "private": true,
   "workspaces": [
-    "web",
-    "mobile",
     "shared"
   ],
   "scripts": {
