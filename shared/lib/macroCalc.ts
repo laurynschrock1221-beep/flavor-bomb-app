@@ -81,6 +81,13 @@ export function getAllTargets(settings: UserSettings): UserMacroTargets {
   }
 }
 
+export function sumSlotMacros(slots: { calories: number; protein_g: number; carbs_g: number; fat_g: number; servings?: number }[]): MacroSet {
+  return slots.reduce((acc, s) => {
+    const n = s.servings ?? 1
+    return { p: acc.p + s.protein_g * n, c: acc.c + s.carbs_g * n, f: acc.f + s.fat_g * n, kcal: acc.kcal + s.calories * n }
+  }, { ...ZERO })
+}
+
 export function sumMacroSets(sets: MacroSet[]): MacroSet {
   return sets.reduce(addMacros, { ...ZERO })
 }
