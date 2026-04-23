@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Flavor Bomb",
+    "slug": "flavor-bomb",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "flavorbomb",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#fff7ed"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.flavorbomb.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#fff7ed"
+      },
+      "package": "com.flavorbomb.app"
+    },
+    "plugins": ["expo-router"]
+  }
+}

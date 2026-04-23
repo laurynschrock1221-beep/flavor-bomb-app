@@ -1,0 +1,11 @@
+{
+  "name": "@flavor-bomb/shared",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "react": ">=18.0.0"
+  }
+}
