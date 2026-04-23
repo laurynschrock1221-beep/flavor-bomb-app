@@ -20,7 +20,11 @@
       "@flavor-bomb/shared": ["../shared/index.ts"],
       "@flavor-bomb/shared/*": ["../shared/*"],
       "react": ["./node_modules/@types/react"],
-      "react-dom": ["./node_modules/@types/react-dom"]
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "@supabase/supabase-js": ["./node_modules/@supabase/supabase-js"],
+      "@supabase/supabase-js/*": ["./node_modules/@supabase/supabase-js/*"],
+      "@supabase/ssr": ["./node_modules/@supabase/ssr"],
+      "@supabase/ssr/*": ["./node_modules/@supabase/ssr/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../shared/**/*.ts"],
