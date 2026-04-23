@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useMealPlan, useMacros, getWeekStart, getTargetsForDayType, sumSlotMacros } from '@flavor-bomb/shared'
 import DayTypeToggle from './DayTypeToggle'
 import MacroSummary from './MacroSummary'
-import type { Recipe, MealType, DayType, MealPlanSlot, UserSettings } from '@flavor-bomb/shared'
+import type { Recipe, MealType, DayType, MealSlot, UserSettings } from '@flavor-bomb/shared'
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack']
@@ -43,7 +43,7 @@ export default function MealPlannerPage({ recipes, userSettings }: Props) {
     return d.toISOString().split('T')[0]
   }
 
-  function getSlotsForCell(day: string, mealType: MealType): MealPlanSlot[] {
+  function getSlotsForCell(day: string, mealType: MealType): MealSlot[] {
     return (mealPlan?.slots ?? []).filter(s => s.day === day && s.meal_type === mealType)
   }
 
