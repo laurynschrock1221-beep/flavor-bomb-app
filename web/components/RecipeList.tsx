@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react'
 import RecipeCard from './RecipeCard'
 import DayTypeToggle from './DayTypeToggle'
 import { createClient } from '@/lib/supabase/client'
+import { useFavorites } from '@/hooks/useFavorites'
 import type { Recipe, DayType, MealType, UserSettings } from '@flavor-bomb/shared'
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack', 'side'] as const
@@ -21,10 +22,12 @@ export default function RecipeList({ initialRecipes, userSettings }: Props) {
   const searchParams = useSearchParams()
 
   const supabase = createClient()
-  const [dayType, setDayType] = useState<DayType>('moderate')
-  const [isGF, setIsGF]       = useState(true)
-  const [isLC, setIsLC]       = useState(false)
-  const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes)
+  const { favorites, toggle: toggleFavorite } = useFavorites()
+  const [dayType, setDayType]     = useState<DayType>('moderate')
+  const [isGF, setIsGF]           = useState(true)
+  const [isLC, setIsLC]           = useState(false)
+  const [showFavOnly, setShowFavOnly] = useState(false)
+  const [recipes, setRecipes]     = useState<Recipe[]>(initialRecipes)
 
   async function handleMealTypeChange(recipeId: string, mealType: MealType) {
     setRecipes(prev => prev.map(r => {
@@ -58,6 +61,7 @@ export default function RecipeList({ initialRecipes, userSettings }: Props) {
     if (activeMeal    && !(r.meal_type ?? []).includes(activeMeal as MealType)) return false
     if (activeCuisine && r.cuisine !== activeCuisine) return false
     if (activeGF      && !r.is_gf)                   return false
+    if (showFavOnly   && !favorites.has(r.id))        return false
     return true
   })
 
@@ -84,6 +88,9 @@ export default function RecipeList({ initialRecipes, userSettings }: Props) {
         </button>
         <button onClick={() => setIsLC(v => !v)} style={chipStyle(isLC, '#8B5E3C')}>
           🥦 Low Carb
+        </button>
+        <button onClick={() => setShowFavOnly(v => !v)} style={chipStyle(showFavOnly, '#f59e0b')}>
+          ★ Favorites
         </button>
       </div>
 
@@ -122,6 +129,8 @@ export default function RecipeList({ initialRecipes, userSettings }: Props) {
               isGF={isGF}
               isLC={isLC}
               userSettings={userSettings}
+              isFavorite={favorites.has(r.id)}
+              onToggleFavorite={toggleFavorite}
               onMealTypeChange={(mt) => handleMealTypeChange(r.id, mt)}
             />
           ))}

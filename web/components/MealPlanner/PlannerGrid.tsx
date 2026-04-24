@@ -39,7 +39,13 @@ export default function PlannerGrid({ recipes, userSettings }: Props) {
   const [isGF, setIsGF]                   = useState(false)
   const [draggedRecipe, setDraggedRecipe] = useState<Recipe | null>(null)
   const [isMobile, setIsMobile]           = useState(false)
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0)
+  const [selectedDayIndex, setSelectedDayIndex] = useState(() => {
+    // Default to today's index within the current week (0=Mon … 6=Sun)
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const ws    = new Date(getWeekStart()); ws.setHours(0, 0, 0, 0)
+    const diff  = Math.round((today.getTime() - ws.getTime()) / 86_400_000)
+    return diff >= 0 && diff <= 6 ? diff : 0
+  })
   const [pickerSlot, setPickerSlot]       = useState<{ day: number; mealType: MealType } | null>(null)
   const [pickerSearch, setPickerSearch]   = useState('')
 
@@ -163,6 +169,10 @@ export default function PlannerGrid({ recipes, userSettings }: Props) {
                 const d        = slotDate(weekStart, i)
                 const hasSlots = (plan?.slots ?? []).some(s => s.day === i)
                 const sel      = selectedDayIndex === i
+                // Is this calendar day == today?
+                const today    = new Date(); today.setHours(0,0,0,0)
+                const dayDate  = new Date(d); dayDate.setHours(0,0,0,0)
+                const isToday  = dayDate.getTime() === today.getTime()
                 return (
                   <button
                     key={i}
@@ -170,7 +180,7 @@ export default function PlannerGrid({ recipes, userSettings }: Props) {
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center',
                       padding: '8px 10px', borderRadius: 12, cursor: 'pointer', flexShrink: 0,
-                      border: `2px solid ${sel ? '#C1440E' : '#ede8e0'}`,
+                      border: `2px solid ${sel ? '#C1440E' : isToday ? '#f59e0b' : '#ede8e0'}`,
                       background: sel ? '#C1440E' : '#fff',
                       color: sel ? '#fff' : '#666',
                       minWidth: 44,

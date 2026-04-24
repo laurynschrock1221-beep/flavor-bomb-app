@@ -37,6 +37,8 @@ interface Props {
   isLC?:        boolean
   userSettings?: UserSettings | null
   compact?:     boolean
+  isFavorite?:  boolean
+  onToggleFavorite?: (id: string) => void
   onMealTypeChange?: (mealType: MealType) => void
 }
 
@@ -47,6 +49,8 @@ export default function RecipeCard({
   isLC       = false,
   userSettings,
   compact    = false,
+  isFavorite = false,
+  onToggleFavorite,
   onMealTypeChange,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false)
@@ -154,15 +158,31 @@ export default function RecipeCard({
             </div>
           </div>
 
-          {/* Chevron */}
-          {!compact && (
-            <div style={{
-              color: '#bbb', fontSize: 18, transform: isOpen ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.2s', flexShrink: 0, marginTop: 4,
-            }}>
-              ▾
-            </div>
-          )}
+          {/* Favorite + Chevron */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
+            {onToggleFavorite && (
+              <button
+                onClick={e => { e.stopPropagation(); onToggleFavorite(recipe.id) }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 18, padding: '2px 4px', lineHeight: 1,
+                  color: isFavorite ? '#f59e0b' : '#ddd',
+                  transition: 'color 0.15s',
+                }}
+                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                {isFavorite ? '★' : '☆'}
+              </button>
+            )}
+            {!compact && (
+              <div style={{
+                color: '#bbb', fontSize: 18, transform: isOpen ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.2s',
+              }}>
+                ▾
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── Macro chips row ───────────────────────────────── */}
