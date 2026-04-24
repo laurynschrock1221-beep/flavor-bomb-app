@@ -113,7 +113,7 @@ export default function RecipeList({ initialRecipes, userSettings }: Props) {
       {filtered.length === 0 ? (
         <p style={{ textAlign: 'center', color: '#aaa', padding: '48px 0' }}>No recipes match.</p>
       ) : (
-        <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+        <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))' }}>
           {filtered.map(r => (
             <RecipeCard
               key={r.id}

@@ -37,21 +37,21 @@ export default async function RecipesPage({
       background: 'linear-gradient(135deg, #fdf6ec 0%, #fef9f4 100%)',
       minHeight: '100vh',
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 26, margin: 0, color: '#1a1a1a' }}>
           Recipes
         </h1>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <Link href="/settings" style={{ padding: '8px 16px', borderRadius: 10, border: '1.5px solid #ede8e0', background: '#fff', fontSize: 13, fontWeight: 600, color: '#666', textDecoration: 'none' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href="/settings" style={{ padding: '7px 12px', borderRadius: 10, border: '1.5px solid #ede8e0', background: '#fff', fontSize: 12, fontWeight: 600, color: '#666', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             ⚙️ Settings
           </Link>
-          <Link href="/planner" style={{ padding: '8px 16px', borderRadius: 10, border: '1.5px solid #ede8e0', background: '#fff', fontSize: 13, fontWeight: 600, color: '#666', textDecoration: 'none' }}>
+          <Link href="/planner" style={{ padding: '7px 12px', borderRadius: 10, border: '1.5px solid #ede8e0', background: '#fff', fontSize: 12, fontWeight: 600, color: '#666', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             Planner
           </Link>
-          <Link href="/recipes/import" style={{ padding: '8px 16px', borderRadius: 10, background: '#C1440E', fontSize: 13, fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
+          <Link href="/recipes/import" style={{ padding: '7px 12px', borderRadius: 10, background: '#C1440E', fontSize: 12, fontWeight: 700, color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             📸 Import
           </Link>
-          <Link href="/recipes/create" style={{ padding: '8px 16px', borderRadius: 10, background: '#1a1a1a', fontSize: 13, fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
+          <Link href="/recipes/create" style={{ padding: '7px 12px', borderRadius: 10, background: '#1a1a1a', fontSize: 12, fontWeight: 700, color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             ✨ Create
           </Link>
         </div>
