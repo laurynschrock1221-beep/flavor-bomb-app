@@ -60,7 +60,6 @@ export default function LoginPage() {
             />
           </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
-          <p className="text-gray-400 text-xs break-all">url: {process.env.NEXT_PUBLIC_SUPABASE_URL ?? '(undefined)'}</p>
           <button
             type="submit"
             disabled={loading}
