@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcRecipeMacros } from '@flavor-bomb/shared'
-import type { Recipe } from '@flavor-bomb/shared'
+import type { Recipe, MacroSet } from '@flavor-bomb/shared'
 
 interface Props {
-  recipe: Recipe
-  isGF?:  boolean
-  isLC?:  boolean
-  accentColor: string
+  recipe:        Recipe
+  isGF?:         boolean
+  isLC?:         boolean
+  accentColor:   string
+  macroOverride?: MacroSet   // custom macros from RecipeCustomizer
 }
 
 function todayStr() {
@@ -20,7 +21,7 @@ function nowTime() {
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
 
-export default function LogMealButton({ recipe, isGF = false, isLC = false, accentColor }: Props) {
+export default function LogMealButton({ recipe, isGF = false, isLC = false, accentColor, macroOverride }: Props) {
   const supabase = createClient()
   const [open,   setOpen]   = useState(false)
   const [date,   setDate]   = useState(todayStr)
@@ -30,7 +31,7 @@ export default function LogMealButton({ recipe, isGF = false, isLC = false, acce
   const [saving, setSaving] = useState(false)
   const [done,   setDone]   = useState(false)
 
-  const macros = calcRecipeMacros(recipe, { isGF, isLC })
+  const macros = macroOverride ?? calcRecipeMacros(recipe, { isGF, isLC })
 
   const ingredientText = (recipe.ingredients ?? [])
     .map(i => [i.quantity, i.unit, i.name].filter(Boolean).join(' '))

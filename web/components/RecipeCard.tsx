@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import type { Recipe, DayType, MealType, UserSettings } from '@flavor-bomb/shared'
+import { useState, useCallback } from 'react'
+import type { Recipe, DayType, MealType, UserSettings, MacroSet } from '@flavor-bomb/shared'
 import { calcRecipeMacros, getTargetsForDayType } from '@flavor-bomb/shared'
 import LogMealButton from './LogMealButton'
+import RecipeCustomizer from './RecipeCustomizer'
 
 // ── Cuisine accent color system ──────────────────────────────
 const CUISINE_COLORS: Record<string, { color: string; bg: string }> = {
@@ -53,9 +54,12 @@ export default function RecipeCard({
   onToggleFavorite,
   onMealTypeChange,
 }: Props) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen]             = useState(false)
+  const [customMacros, setCustomMacros] = useState<MacroSet | null>(null)
+  const handleMacroChange = useCallback((m: MacroSet | null) => setCustomMacros(m), [])
+
   const accent = getAccent(recipe.cuisine)
-  const macros = calcRecipeMacros(recipe, { isGF, isLC })
+  const macros = customMacros ?? calcRecipeMacros(recipe, { isGF, isLC })
 
   const defaultSettings = {
     calorie_target_min: 1800, calorie_target_max: 2200,
@@ -302,9 +306,28 @@ export default function RecipeCard({
             </div>
           )}
 
+          {/* Ingredient customizer */}
+          {(recipe.ingredients?.length ?? 0) > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <RecipeCustomizer
+                recipe={recipe}
+                isGF={isGF}
+                isLC={isLC}
+                accentColor={accent.color}
+                onChange={handleMacroChange}
+              />
+            </div>
+          )}
+
           {/* Log to tracker */}
           <div style={{ marginBottom: 14 }}>
-            <LogMealButton recipe={recipe} isGF={isGF} isLC={isLC} accentColor={accent.color} />
+            <LogMealButton
+              recipe={recipe}
+              isGF={isGF}
+              isLC={isLC}
+              accentColor={accent.color}
+              macroOverride={customMacros ?? undefined}
+            />
           </div>
 
           {/* Day type macro detail */}
