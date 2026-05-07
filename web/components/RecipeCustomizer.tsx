@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import type { Recipe, MacroSet } from '@flavor-bomb/shared'
+import type { Recipe, MacroSet, Ingredient } from '@flavor-bomb/shared'
 import { calcIngredientMacros } from '@flavor-bomb/shared'
+import { createClient } from '@/lib/supabase/client'
 
 interface Props {
   recipe:    Recipe
@@ -13,8 +14,15 @@ interface Props {
 }
 
 export default function RecipeCustomizer({ recipe, isGF, isLC, accentColor, onChange }: Props) {
-  const ingredients = recipe.ingredients ?? []
-  const servings    = Math.max(1, recipe.servings ?? 1)
+  const supabase  = createClient()
+  const servings  = Math.max(1, recipe.servings ?? 1)
+
+  // localIngredients lets us update macros in-place after estimation
+  const [localIngredients, setLocalIngredients] = useState<Ingredient[]>(recipe.ingredients ?? [])
+  const [estimating, setEstimating] = useState(false)
+  const [estimateError, setEstimateError] = useState<string | null>(null)
+
+  const ingredients = localIngredients
 
   const [enabled, setEnabled]     = useState<Record<string, boolean>>(() =>
     Object.fromEntries(ingredients.map(i => [i.id, true]))
@@ -57,14 +65,62 @@ export default function RecipeCustomizer({ recipe, isGF, isLC, accentColor, onCh
     onChange(null)
   }
 
+  async function estimateMacros() {
+    setEstimating(true)
+    setEstimateError(null)
+    try {
+      const res = await fetch('/api/estimate-macros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ingredients: ingredients.map(i => ({ name: i.name, quantity: i.quantity, unit: i.unit })),
+        }),
+      })
+      const json = await res.json()
+      if (!Array.isArray(json.macros) || json.macros.length !== ingredients.length) {
+        throw new Error('Unexpected response')
+      }
+      // Save to DB so it's permanent
+      await Promise.all(
+        ingredients.map((ing, idx) =>
+          (supabase as any).schema('recipes').from('ingredients')
+            .update({ macros: json.macros[idx] })
+            .eq('id', ing.id)
+        )
+      )
+      // Update local state so the customizer immediately works
+      const updated = ingredients.map((ing, idx) => ({ ...ing, macros: json.macros[idx] }))
+      setLocalIngredients(updated)
+      setEnabled(Object.fromEntries(updated.map(i => [i.id, true])))
+      setQtys(Object.fromEntries(updated.map(i => [i.id, i.quantity ?? 1])))
+    } catch {
+      setEstimateError('Could not estimate macros — try again.')
+    }
+    setEstimating(false)
+  }
+
   const isModified = ingredients.some(i => !enabled[i.id] || qtys[i.id] !== (i.quantity ?? 1))
   const live       = calcCustomMacros(enabled, qtys)
   const hasMacros  = ingredients.some(i => i.macros !== null)
 
   if (!hasMacros) {
     return (
-      <div style={{ fontSize: 12, color: '#bbb', padding: '8px 0', fontStyle: 'italic' }}>
-        No per-ingredient macro data — edit saved recipe to add it.
+      <div style={{ padding: '10px 0' }}>
+        <p style={{ fontSize: 12, color: '#aaa', marginBottom: 10, fontStyle: 'italic' }}>
+          No per-ingredient macro data yet.
+        </p>
+        <button
+          onClick={estimateMacros}
+          disabled={estimating}
+          style={{
+            padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+            border: `1.5px solid ${accentColor}`, background: estimating ? '#f5f0ea' : '#fff',
+            color: estimating ? '#bbb' : accentColor, cursor: estimating ? 'default' : 'pointer',
+          }}
+        >
+          {estimating ? 'Estimating…' : '✨ Estimate ingredient macros'}
+        </button>
+        {estimateError && <p style={{ fontSize: 11, color: '#C1440E', marginTop: 6 }}>{estimateError}</p>}
       </div>
     )
   }

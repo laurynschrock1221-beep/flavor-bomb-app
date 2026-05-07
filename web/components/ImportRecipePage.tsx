@@ -40,7 +40,31 @@ export default function ImportRecipePage() {
       return
     }
 
-    setParsed(json.recipe as ParsedRecipe)
+    const recipe = json.recipe as ParsedRecipe
+
+    // If any ingredients came back without macros, fill them in now
+    const ings = recipe.ingredients ?? []
+    const needsMacros = ings.some(i => !i.macros)
+    if (needsMacros && ings.length > 0) {
+      try {
+        const macroRes = await fetch('/api/estimate-macros', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ingredients: ings.map(i => ({ name: i.name, quantity: i.quantity, unit: i.unit })) }),
+        })
+        const macroJson = await macroRes.json()
+        if (Array.isArray(macroJson.macros) && macroJson.macros.length === ings.length) {
+          recipe.ingredients = ings.map((ing, i) => ({
+            ...ing,
+            macros: ing.macros ?? macroJson.macros[i] ?? null,
+          }))
+        }
+      } catch {
+        // non-fatal — save without macros, user can estimate later
+      }
+    }
+
+    setParsed(recipe)
     setImageUrl(json.source_image_url)
     setLoading(false)
   }
